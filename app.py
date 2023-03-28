@@ -11,7 +11,7 @@ def init():
     # repo = 'stabilityai/stable-diffusion-2-1-base'
     repo = 'prompthero/openjourney-v4'
     # scheduler = DPMSolverMultistepScheduler.from_pretrained(repo, subfolder="scheduler")
-    model = DiffusionPipeline.from_pretrained(repo, torch_dtype=torch.float16, 
+    model = DiffusionPipeline.from_pretrained(repo, torch_dtype=torch.float16, local_files_only=True,
                                               revision="main", #scheduler=scheduler,
                                                use_auth_token=HF_AUTH_TOKEN).to("cuda")    
     model.enable_xformers_memory_efficient_attention()
@@ -19,11 +19,11 @@ def init():
 def inference(model_inputs:dict):
     global model
     prompt = model_inputs.get('prompt', None)
-    height = model_inputs.get('height', 768)
-    width = model_inputs.get('width', 768)
-    steps = model_inputs.get('steps', 20)
+    height = model_inputs.get('height', 512)
+    width = model_inputs.get('width', 512)
+    steps = model_inputs.get('steps', 25)
     neg_prompt = model_inputs.get('negative_prompt', "bad anatomy, low quality, ugly, blurry")
-    guidance_scale = model_inputs.get('guidance_scale', 9)
+    guidance_scale = model_inputs.get('guidance_scale', 8)
     seed = model_inputs.get('seed', None)
 
     if not prompt: return {'message': 'No prompt was provided'}

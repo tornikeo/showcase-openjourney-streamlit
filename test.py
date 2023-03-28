@@ -6,7 +6,7 @@ import base64
 from io import BytesIO
 from PIL import Image
 
-model_inputs = {'prompt': 'realistic field of grass'}
+model_inputs = {'prompt': 'the source of future growth dramatic, elaborate emotive metallic Baroque and Rococo styles to emphasise death as a transcendental, sharp focus, epic scene, 8K'}
 
 res = requests.post('http://localhost:8000/', json = model_inputs)
 
