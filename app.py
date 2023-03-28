@@ -8,17 +8,21 @@ import os
 def init():
     global model
     HF_AUTH_TOKEN = os.getenv("HF_AUTH_TOKEN")
-    repo = 'stabilityai/stable-diffusion-2-1-base'
-    scheduler = DPMSolverMultistepScheduler.from_pretrained(repo, subfolder="scheduler")
-    model = DiffusionPipeline.from_pretrained(repo, torch_dtype=torch.float16, revision="fp16", scheduler=scheduler, use_auth_token=HF_AUTH_TOKEN).to("cuda")    
-
+    # repo = 'stabilityai/stable-diffusion-2-1-base'
+    repo = 'prompthero/openjourney-v4'
+    # scheduler = DPMSolverMultistepScheduler.from_pretrained(repo, subfolder="scheduler")
+    model = DiffusionPipeline.from_pretrained(repo, torch_dtype=torch.float16, 
+                                              revision="main", #scheduler=scheduler,
+                                               use_auth_token=HF_AUTH_TOKEN).to("cuda")    
+    model.enable_xformers_memory_efficient_attention()
+    
 def inference(model_inputs:dict):
     global model
-
     prompt = model_inputs.get('prompt', None)
     height = model_inputs.get('height', 768)
     width = model_inputs.get('width', 768)
     steps = model_inputs.get('steps', 20)
+    neg_prompt = model_inputs.get('negative_prompt', "bad anatomy, low quality, ugly, blurry")
     guidance_scale = model_inputs.get('guidance_scale', 9)
     seed = model_inputs.get('seed', None)
 
@@ -28,7 +32,9 @@ def inference(model_inputs:dict):
     if seed: generator = torch.Generator("cuda").manual_seed(seed)
     
     with autocast("cuda"):
-        image = model(prompt, guidance_scale=guidance_scale, height=height, width=width, num_inference_steps=steps, generator=generator).images[0]
+        image = model(prompt, guidance_scale=guidance_scale, 
+            negative_prompt=neg_prompt, height=height, width=width, 
+            num_inference_steps=steps, generator=generator).images[0]
     
     buffered = BytesIO()
     image.save(buffered, format="JPEG")
